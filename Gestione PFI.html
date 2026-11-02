@@ -1,0 +1,813 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Gestione PFI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Gestione PFI — stile condiviso (app PHP e demo). Palette e caratteri dal prototipo. */
+:root{
+  --bg:#faf6f0;--pn:#fff;--pn2:#f5efe7;--ink:#2a2420;--mu:#7a6e64;--ln:#e2d8cc;
+  --ac:#b4553a;--ac2:#f3e3da;--ok:#3f7a4f;--ok2:#e3efe5;--wa:#9a6a12;--wa2:#f6ead2;--er:#a8322b;
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --sans:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1c1815;--pn:#26211d;--pn2:#211c19;--ink:#efe7de;--mu:#a89c90;--ln:#3a332d;
+  --ac:#d9805f;--ac2:#3a2a23;--ok:#7fc08f;--ok2:#22302542;--wa:#e0b45c;--wa2:#3a301e;--er:#e57a70;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1c1815;--pn:#26211d;--pn2:#211c19;--ink:#efe7de;--mu:#a89c90;--ln:#3a332d;
+  --ac:#d9805f;--ac2:#3a2a23;--ok:#7fc08f;--ok2:#22302542;--wa:#e0b45c;--wa2:#3a301e;--er:#e57a70;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--sans)}
+h1,h2,h3{font-family:var(--serif);font-weight:600;margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+button,.btn{background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:7px 13px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;line-height:1.3}
+button:hover:not(:disabled),.btn:hover{border-color:var(--ac)}
+button:focus-visible,.btn:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+button.on{border-color:var(--ac);background:var(--ac2);color:var(--ac)}
+button:disabled{opacity:.5;cursor:default}
+button.danger{color:var(--er)}
+input,select,textarea{width:100%;background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:8px 10px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac2);border-color:var(--ac)}
+input:disabled,select:disabled,textarea:disabled{background:var(--pn2);color:var(--ink);opacity:1;border-style:dashed;cursor:not-allowed}
+textarea{resize:vertical;min-height:70px;overflow:hidden}
+input[type=checkbox]{width:auto;accent-color:var(--ac)}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:3px}
+.hide{display:none!important}
+.mu{color:var(--mu);font-size:13px}
+.err{color:var(--er);font-size:14px}
+
+/* Testata */
+.top{border-bottom:1px solid var(--ln);background:var(--pn)}
+.top-in{max-width:1080px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand h1{font-size:28px;line-height:1}
+.brand p{margin:2px 0 0;color:var(--mu);font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+#nav{display:flex;flex-wrap:wrap;gap:6px;flex:1}
+#who{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#who select{width:auto;max-width:260px}
+.me{display:flex;flex-direction:column;line-height:1.2;text-align:right}
+.me small{color:var(--mu);font-size:12px}
+
+main{max-width:1080px;margin:0 auto;padding-block:22px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.vh{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 16px;margin-bottom:16px}
+.vh h2{font-size:28px}
+.vh .sp{flex:1}
+.vh p{margin:2px 0 0;max-width:68ch}
+
+/* Elenco */
+.tools{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.tools input[type=search]{flex:2 1 220px}
+.tools .sm{flex:0 1 130px}
+.adv{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:14px;margin-bottom:12px}
+.adv .act{display:flex;align-items:flex-end}
+.tw{overflow-x:auto;background:var(--pn);border:1px solid var(--ln);border-radius:8px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--ln);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+th{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.05em;color:var(--mu)}
+td.ac{white-space:nowrap;text-align:right}
+td.ac button{padding:4px 10px;font-size:13px;margin-left:4px}
+td.num,.num{font-variant-numeric:tabular-nums}
+.st{font-size:12px;padding:2px 9px;border-radius:99px;white-space:nowrap;background:var(--ac2);color:var(--ac)}
+.st.s1{background:var(--wa2);color:var(--wa)}
+.st.s2{background:var(--ok2);color:var(--ok)}
+.st.off{background:var(--pn2);color:var(--mu)}
+.tag{font-size:11px;padding:1px 7px;border-radius:4px;border:1px solid var(--ln);color:var(--mu);white-space:nowrap}
+
+/* Modulo PFI */
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px}
+.bar .sp{flex:1}
+.role{font-size:13px;color:var(--mu)}
+#sheet{background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:28px}
+#sheet>h2{font-size:30px;text-align:center}
+#sheet>p{text-align:center;margin:2px 0 8px;color:var(--mu)}
+.sec{margin-top:22px}
+.sec>h2{font-size:22px;color:var(--ac);border-bottom:1px solid var(--ln);padding-bottom:4px;margin-bottom:12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.who{font:500 11px/1.4 var(--sans);letter-spacing:.04em;text-transform:uppercase;color:var(--mu);border:1px solid var(--ln);border-radius:4px;padding:1px 6px}
+label .who{margin-left:4px;padding:0 5px;font-size:10px}
+.sec.ro>h2{color:var(--mu)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.g>div{min-width:0}
+.g .w{grid-column:1/-1}
+.req{color:var(--ac)}
+.chips{display:flex;flex-wrap:wrap;gap:6px 14px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--ink);margin:0;cursor:pointer}
+.rt-w{margin-top:14px}
+.rt textarea{min-height:40px}
+.rt td{padding:6px 6px 6px 0;border:0}
+.rt td:first-child{padding-left:8px}
+.pdfl{margin:0;padding-left:18px}
+.pdfl li{margin:3px 0}
+
+/* Amministrazione */
+.panel{background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:18px;margin-bottom:16px}
+.panel h3{font-size:22px;margin-bottom:10px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.stulist{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 14px;max-height:260px;overflow:auto;border:1px solid var(--ln);border-radius:6px;padding:10px}
+.stulist .cl{grid-column:1/-1;font-size:12px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;margin-top:6px}
+
+.msec{background:var(--pn);border:1px solid var(--ln);border-radius:8px;padding:16px;margin-bottom:14px}
+.msec.off{opacity:.62}
+.mhead{display:grid;grid-template-columns:minmax(0,1fr) 200px auto;gap:10px;align-items:end}
+.mhead .ttl input{font-family:var(--serif);font-size:20px;font-weight:600;padding:4px 10px}
+.mopts{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;align-items:center}
+.mf{margin-top:12px;border-top:1px solid var(--ln)}
+.mrow{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.1fr) minmax(0,1.2fr) auto auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--ln)}
+.mrow.off>*:not(.keep){opacity:.55}
+.mrow .opz{grid-column:1/-1}
+.mrow input,.mrow select{padding:6px 8px;font-size:14px}
+.mv{display:flex;gap:4px}
+.mv button{padding:4px 8px;font-size:13px}
+.mhdr{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.05em;padding:8px 0 0;border:0}
+
+/* Accesso */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.card{width:100%;max-width:380px;background:var(--pn);border:1px solid var(--ln);border-radius:10px;padding:28px;display:grid;gap:6px}
+.card h1{font-size:34px}
+.card button{margin-top:12px;justify-content:center}
+.card input{margin-bottom:6px}
+
+#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:min(560px,calc(100vw - 32px));z-index:20}
+#toast.on{opacity:1}
+#toast.bad{background:var(--er);color:#fff}
+
+@media(max-width:640px){
+  .mhead{grid-template-columns:1fr}
+  .mrow{grid-template-columns:1fr 1fr}
+  .mrow>.lab{grid-column:1/-1}
+  #sheet{padding:18px}
+  .me{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){#toast{transition:none}}
+
+@media print{
+  :root{--bg:#fff;--pn:#fff;--pn2:#fff;--ink:#000;--mu:#444;--ln:#999;--ac:#7a2e18;--ac2:#fff;color-scheme:light}
+  .top,.bar,.no-print,#toast{display:none!important}
+  main{padding:0;max-width:none}
+  #sheet{border:0;padding:0}
+  .sec{break-inside:avoid}
+  input,select,textarea{border:1px solid #999!important;background:#fff!important}
+  @page{margin:14mm}
+}
+
+.demo{background:var(--ac2);color:var(--ink);font-size:13px}
+.demo-in{max-width:1080px;margin:0 auto;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding-block:7px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.demo b{color:var(--ac);text-transform:uppercase;letter-spacing:.06em;font-size:11px}
+.demo .sp{flex:1}
+.demo button{padding:3px 10px;font-size:12px;background:transparent}
+.whoas{display:flex;flex-direction:column}
+.whoas label{margin:0 0 2px}
+</style>
+<div class="demo" role="note"><div class="demo-in">
+  <b>Demo</b><span>Dati di esempio salvati solo in questo browser. Cambia utente per vedere i permessi dei tre ruoli.</span>
+  <span class="sp"></span><button id="dReset" type="button">Ripristina dati di esempio</button>
+</div></div>
+<div id="app"></div>
+<script>
+/* Gestione PFI — frontend condiviso.
+ * Funziona con qualsiasi "api" che espone:
+ *   call(azione, dati) → Promise   (ServerApi in index.php, DemoApi nella demo offline)
+ *   pdf(id)            → Promise   ({server:true} oppure {print:true, file})
+ *   pdfHref(p)         → url di un PDF archiviato (facoltativo)
+ */
+(function () {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const STATI = ["Bozza", "In compilazione", "Completo"];
+  const CHI = { studente: "Studente", docente: "Docenti", entrambi: "Studente e docenti" };
+  const TIPI = { testo: "Testo breve", area: "Testo lungo", data: "Data", numero: "Numero", scelta: "Elenco a scelta" };
+  const RUOLI = { admin: "Amministratore", docente: "Docente", studente: "Studente" };
+
+  let api, opt, me, scuola = "", modello = [], studenti = [], docenti = [], cur = null, view = "list";
+  let filtri = {}, utenti = [], M = [];
+
+  // ---------- utilità ----------
+  function toast(m, bad) {
+    const t = $("#toast"); if (!t) return;
+    t.textContent = m; t.classList.toggle("bad", !!bad); t.classList.add("on");
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("on"), bad ? 4500 : 2400);
+  }
+  const grow = e => { e.style.height = "auto"; e.style.height = e.scrollHeight + "px"; };
+  const parseD = s => s ? new Date(String(s).replace(" ", "T")) : null;
+  const fmtD = s => s ? parseD(s).toLocaleDateString("it-IT") : "";
+  const fmtDT = s => s ? parseD(s).toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" }) : "";
+  const nomeU = u => u ? `${u.cognome} ${u.nome}` : "";
+  const val = s => { const e = $(s); return e ? e.value.trim() : ""; };
+  const isAdmin = () => me.ruolo === "admin";
+  const isStaff = () => me.ruolo !== "studente";
+  const canFill = chi => isAdmin() || (chi || "docente") === "entrambi" || (chi || "docente") === me.ruolo;
+  const badge = s => `<span class="st s${STATI.indexOf(s)}">${esc(s)}</span>`;
+  function annoCorrente() { const d = new Date(), y = d.getMonth() >= 8 ? d.getFullYear() : d.getFullYear() - 1; return `${y}/${String(y + 1).slice(2)}`; }
+
+  async function call(a, d) {
+    try { return await api.call(a, d || {}); }
+    catch (e) { toast(e.message || "Errore imprevisto", 1); throw e; }
+  }
+
+  // ---------- struttura e navigazione ----------
+  function shell() {
+    $("#app").innerHTML = `
+<header class="top"><div class="top-in">
+  <div class="brand"><h1>Gestione PFI</h1><p>Piani Formativi Individuali</p></div>
+  <nav id="nav" aria-label="Sezioni"></nav>
+  <div id="who"></div>
+</div></header>
+<main id="main"></main>
+<div id="toast" role="status" aria-live="polite"></div>`;
+  }
+  function nav() {
+    const b = [["list", "Elenco PFI"]];
+    if (isAdmin()) b.push(["users", "Utenti e permessi"], ["model", "Modello PFI"]);
+    const active = view === "form" ? "list" : view;
+    $("#nav").innerHTML = b.map(([v, l]) => `<button data-go="${v}" class="${active === v ? "on" : ""}">${l}</button>`).join("") +
+      (isStaff() ? `<button class="pri" data-go="new">+ Nuovo PFI</button>` : "");
+  }
+  function go(v, arg) {
+    view = v === "new" ? "form" : v; nav(); scrollTo(0, 0);
+    ({ list: showList, form: () => openPfi(arg), new: () => openPfi(null), users: showUsers, model: showModel })[v]();
+  }
+
+  document.addEventListener("click", e => {
+    const g = e.target.closest("[data-go]"); if (g) { go(g.dataset.go); return; }
+    const add = e.target.closest("[data-addr]");
+    if (add) { const tb = $(`table[data-rs="${add.dataset.addr}"] tbody`); tb.insertAdjacentHTML("beforeend", rigaHtml({}, true)); $$("textarea", tb).forEach(grow); return; }
+    const rm = e.target.closest("[data-rmr]"); if (rm) { rm.closest("tr").remove(); }
+  });
+  document.addEventListener("input", e => { if (e.target.tagName === "TEXTAREA" && e.target.closest("#sheet")) grow(e.target); });
+
+  // ---------- elenco e ricerca ----------
+  function showList() {
+    const adv = isAdmin();
+    $("#main").innerHTML = `
+<div class="vh"><div><h2>${me.ruolo === "studente" ? "Il mio PFI" : "Piani formativi"}</h2>
+  <p class="mu">${{ admin: "Tutti i PFI della scuola.", docente: "PFI creati da te, a cui sei associato o dei tuoi studenti.", studente: "Apri il tuo piano per compilare la parte dello studente." }[me.ruolo]}</p></div></div>
+${isStaff() ? `<div class="tools">
+  <input id="fq" type="search" placeholder="Cerca per nome o cognome" value="${esc(filtri.q)}" aria-label="Cerca studente">
+  <input id="fcl" class="sm" placeholder="Classe" value="${esc(filtri.classe)}" aria-label="Classe">
+  ${adv ? `<button id="fadv" class="${filtri.open ? "on" : ""}" aria-expanded="${!!filtri.open}">Ricerca avanzata</button>` : ""}
+</div>` : ""}
+${adv ? `<div id="advbox" class="adv ${filtri.open ? "" : "hide"}">
+  <div><label for="ftesto">Testo nei contenuti</label><input id="ftesto" value="${esc(filtri.testo)}" placeholder="es. tutoraggio"></div>
+  <div><label for="fanno">Anno scolastico</label><input id="fanno" value="${esc(filtri.anno)}" placeholder="${annoCorrente()}"></div>
+  <div><label for="fstato">Stato</label><select id="fstato"><option value="">Tutti</option>${STATI.map(s => `<option ${filtri.stato === s ? "selected" : ""}>${s}</option>`).join("")}</select></div>
+  <div><label for="fdoc">Docente</label><select id="fdoc"><option value="">Tutti</option>${docenti.map(d => `<option value="${d.id}" ${filtri.docente_id == d.id ? "selected" : ""}>${esc(nomeU(d))}</option>`).join("")}</select></div>
+  <div><label for="fdal">Modificato dal</label><input id="fdal" type="date" value="${esc(filtri.dal)}"></div>
+  <div><label for="fal">al</label><input id="fal" type="date" value="${esc(filtri.al)}"></div>
+  <div class="act"><button id="freset">Azzera filtri</button></div>
+</div>` : ""}
+<div class="tw"><table id="tb"><tbody><tr><td class="mu">Caricamento…</td></tr></tbody></table></div>
+<p id="cnt" class="mu"></p>`;
+
+    let t;
+    $$("#main .tools input, #advbox input, #advbox select").forEach(e => e.addEventListener(e.tagName === "SELECT" || e.type === "date" ? "change" : "input", () => {
+      filtri = { ...filtri, q: val("#fq"), classe: val("#fcl"), testo: val("#ftesto"), anno: val("#fanno"), stato: val("#fstato"), docente_id: val("#fdoc"), dal: val("#fdal"), al: val("#fal") };
+      clearTimeout(t); t = setTimeout(loadList, 220);
+    }));
+    if (adv) {
+      $("#fadv").onclick = () => { filtri.open = !filtri.open; $("#advbox").classList.toggle("hide", !filtri.open); $("#fadv").classList.toggle("on", filtri.open); $("#fadv").setAttribute("aria-expanded", filtri.open); };
+      $("#freset").onclick = () => { filtri = { open: true }; showList(); };
+    }
+    $("#tb").addEventListener("click", onListClick);
+    loadList();
+  }
+
+  async function loadList() {
+    let L; try { L = await call("pfi.list", filtri); } catch (e) { return; }
+    if (view !== "list") return;
+    const vuoto = me.ruolo === "studente" ? "Il tuo PFI non è ancora stato creato dai docenti." : "Nessun PFI corrisponde ai filtri.";
+    $("#tb").innerHTML = `<thead><tr><th>Studente</th><th>Classe</th><th>Anno</th><th>Stato</th><th>Modificato</th><th><span class="hide">Azioni</span></th></tr></thead><tbody>` +
+      (L.map(r => `<tr><td><b>${esc(r.cognome)}</b> ${esc(r.nome)}</td><td>${esc(r.classe)}</td><td class="num">${esc(r.anno)}</td><td>${badge(r.stato)}</td><td class="num">${fmtD(r.updated_at)}</td>
+        <td class="ac"><button data-a="open" data-id="${r.id}">Apri</button><button data-a="pdf" data-id="${r.id}">PDF</button>${r.puo_eliminare ? `<button data-a="del" data-id="${r.id}" class="danger">Elimina</button>` : ""}</td></tr>`).join("") ||
+        `<tr><td colspan="6" class="mu">${vuoto}</td></tr>`) + `</tbody>`;
+    $("#cnt").textContent = L.length === 1 ? "1 PFI" : `${L.length} PFI`;
+  }
+
+  async function onListClick(e) {
+    const b = e.target.closest("[data-a]"); if (!b) return;
+    const id = +b.dataset.id;
+    if (b.dataset.a === "open") go("form", id);
+    else if (b.dataset.a === "pdf") doPdf(id);
+    else if (b.dataset.a === "del") {
+      if (!b.dataset.arm) { b.dataset.arm = 1; b.textContent = "Confermi?"; setTimeout(() => { if (b.isConnected) { b.dataset.arm = ""; b.textContent = "Elimina"; } }, 3000); return; }
+      try { await call("pfi.delete", { id }); toast("PFI eliminato"); loadList(); } catch (er) { }
+    }
+  }
+
+  // ---------- modulo PFI ----------
+  async function openPfi(id) {
+    view = "form"; nav();
+    if (id) { try { cur = await call("pfi.get", { id }); } catch (e) { go("list"); return; } }
+    else cur = { id: 0, studente_id: 0, classe: "", anno: annoCorrente(), stato: "Bozza", docenti: me.ruolo === "docente" ? [me.id] : [], valori: {}, righe: [], pdf: [], puo_eliminare: false };
+    renderForm();
+  }
+
+  function roleNote() {
+    if (isAdmin()) return "Accesso completo: puoi modificare ogni sezione";
+    if (me.ruolo === "docente") return "Le parti dello studente sono in sola lettura";
+    return "Puoi compilare solo le parti dello studente";
+  }
+
+  function renderForm() {
+    const st = isStaff(), stu = cur.studente || studenti.find(s => s.id == cur.studente_id);
+    const docVis = docenti.filter(d => d.abilitato || cur.docenti.includes(d.id));
+    $("#main").innerHTML = `
+<div class="bar no-print">
+  <button data-go="list">← Elenco</button>
+  <button id="bSave" class="pri">Salva</button>
+  <button id="bPdf">${cur.id ? "Esporta PDF" : "Salva ed esporta PDF"}</button>
+  <span class="sp"></span><span class="role">${roleNote()}</span>
+</div>
+<article id="sheet">
+  <h2>Piano Formativo Individuale</h2>
+  <p>${esc(scuola)}</p>
+  <section class="sec ${st ? "" : "ro"}"><h2>Intestazione <small class="who">Docenti</small></h2><div class="g">
+    <div><label for="hStud">Studente <span class="req">*</span></label>${st
+      ? `<select id="hStud"><option value="">Seleziona lo studente</option>${studenti.filter(s => s.abilitato || s.id == cur.studente_id).map(s => `<option value="${s.id}" ${s.id == cur.studente_id ? "selected" : ""}>${esc(nomeU(s))}${s.classe ? " · " + esc(s.classe) : ""}</option>`).join("")}</select>`
+      : `<input id="hStud" value="${esc(nomeU(stu))}" disabled>`}</div>
+    <div><label for="hClasse">Classe</label><input id="hClasse" value="${esc(cur.classe)}" ${st ? "" : "disabled"}></div>
+    <div><label for="hAnno">Anno scolastico</label><input id="hAnno" value="${esc(cur.anno)}" ${st ? "" : "disabled"}></div>
+    <div><label for="hStato">Stato</label><select id="hStato" ${st ? "" : "disabled"}>${STATI.map(s => `<option ${s === cur.stato ? "selected" : ""}>${s}</option>`).join("")}</select></div>
+    ${st ? `<div class="w"><label>Docenti associati</label><div class="chips">${docVis.map(d => `<label class="chk"><input type="checkbox" data-doc value="${d.id}" ${cur.docenti.includes(d.id) ? "checked" : ""} ${me.ruolo === "docente" && d.id === me.id && cur.docenti.includes(me.id) ? "disabled" : ""}> ${esc(nomeU(d))}</label>`).join("") || `<span class="mu">Nessun docente abilitato</span>`}</div></div>` : ""}
+  </div></section>
+  ${modello.map(secHtml).join("")}
+  ${cur.pdf && cur.pdf.length ? `<section class="sec no-print"><h2>Archivio PDF</h2><ul class="pdfl">${cur.pdf.map(p => `<li>${api.pdfHref ? `<a href="${esc(api.pdfHref(p))}">${esc(p.file)}</a>` : esc(p.file)} <span class="mu">· ${fmtDT(p.created_at)}</span></li>`).join("")}</ul></section>` : ""}
+</article>`;
+    $("#hStud") && st && $("#hStud").addEventListener("change", e => { const s = studenti.find(x => x.id == e.target.value); if (s && s.classe) $("#hClasse").value = s.classe; });
+    $$("#sheet textarea").forEach(grow);
+    $("#bSave").onclick = () => save();
+    $("#bPdf").onclick = async () => { if (await save()) doPdf(cur.id); };
+  }
+
+  function secHtml(s) {
+    const ed = c => canFill(c.chi || s.chi);
+    const any = s.campi.some(ed) || (s.righe && canFill(s.chi));
+    return `<section class="sec ${any ? "" : "ro"}"><h2>${esc(s.titolo)} <small class="who">${CHI[s.chi]}</small></h2><div class="g">` +
+      s.campi.map(c => fieldHtml(c, ed(c), s.chi)).join("") + `</div>` + (s.righe ? righeHtml(s, canFill(s.chi)) : "") + `</section>`;
+  }
+  function fieldHtml(c, ed, chiSez) {
+    const v = cur.valori[c.id] ?? "", dis = ed ? "" : "disabled", id = `f${c.id}`;
+    let inp;
+    if (c.tipo === "area") inp = `<textarea id="${id}" data-c="${c.id}" ${dis}>${esc(v)}</textarea>`;
+    else if (c.tipo === "scelta") inp = `<select id="${id}" data-c="${c.id}" ${dis}><option value=""></option>${c.opzioni.map(o => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}${v && !c.opzioni.includes(v) ? `<option selected>${esc(v)}</option>` : ""}</select>`;
+    else inp = `<input id="${id}" data-c="${c.id}" type="${{ data: "date", numero: "number" }[c.tipo] || "text"}" value="${esc(v)}" ${dis}>`;
+    return `<div class="${c.tipo === "area" ? "w" : ""}"><label for="${id}">${esc(c.etichetta)}${c.obbligatorio ? ' <span class="req" title="Necessario per segnare il PFI come Completo">*</span>' : ""}${c.chi && c.chi !== chiSez ? `<small class="who">${CHI[c.chi]}</small>` : ""}</label>${inp}</div>`;
+  }
+  function righeHtml(s, ed) {
+    const R = cur.righe.filter(r => r.sezione_id == s.id);
+    const list = R.length ? R : (ed ? [{}] : []);
+    return `<div class="tw rt-w"><table class="rt" data-rs="${s.id}"><thead><tr><th>Competenza / attività</th><th>Periodo</th><th>Esito</th>${ed ? '<th class="no-print"><span class="hide">Rimuovi</span></th>' : ""}</tr></thead><tbody>` +
+      (list.map(r => rigaHtml(r, ed)).join("") || `<tr><td colspan="3" class="mu">Nessuna attività inserita.</td></tr>`) +
+      `</tbody></table></div>${ed ? `<p class="no-print"><button data-addr="${s.id}">+ Aggiungi riga</button></p>` : ""}`;
+  }
+  function rigaHtml(r, ed) {
+    const d = ed ? "" : "disabled";
+    return `<tr><td><textarea data-k="competenza" aria-label="Competenza" ${d}>${esc(r.competenza)}</textarea></td><td><input data-k="periodo" aria-label="Periodo" value="${esc(r.periodo)}" ${d}></td><td><input data-k="esito" aria-label="Esito" value="${esc(r.esito)}" ${d}></td>${ed ? `<td class="no-print"><button data-rmr title="Rimuovi riga" aria-label="Rimuovi riga">×</button></td>` : ""}</tr>`;
+  }
+
+  function collect() {
+    const valori = {};
+    $$("#sheet [data-c]").forEach(e => { if (!e.disabled) valori[e.dataset.c] = e.value; });
+    const righe = [];
+    $$("#sheet table[data-rs]").forEach(t => $$("tbody tr", t).forEach(tr => {
+      const r = { sezione_id: +t.dataset.rs };
+      $$("[data-k]", tr).forEach(e => r[e.dataset.k] = e.value.trim());
+      if (r.competenza || r.periodo || r.esito) righe.push(r);
+    }));
+    const st = isStaff();
+    return {
+      id: cur.id, studente_id: st ? +val("#hStud") : cur.studente_id,
+      classe: st ? val("#hClasse") : cur.classe, anno: st ? val("#hAnno") : cur.anno, stato: st ? val("#hStato") : cur.stato,
+      docenti: st ? $$("[data-doc]:checked").map(e => +e.value) : cur.docenti, valori, righe
+    };
+  }
+
+  async function save() {
+    const d = collect();
+    if (isStaff() && !d.studente_id) { toast("Seleziona lo studente a cui appartiene il PFI", 1); $("#hStud").focus(); return false; }
+    if (d.stato === "Completo") {
+      const miss = modello.flatMap(s => s.campi.filter(c => c.obbligatorio && !String(d.valori[c.id] ?? cur.valori[c.id] ?? "").trim()).map(c => c.etichetta));
+      if (miss.length) { toast("Per segnare il PFI come «Completo» mancano: " + miss.join(", "), 1); return false; }
+    }
+    const btn = $("#bSave"); btn.disabled = true;
+    try {
+      const r = await call("pfi.save", d);
+      cur = await call("pfi.get", { id: r.id }); renderForm(); toast("PFI salvato"); return true;
+    } catch (e) { return false; }
+    finally { if (btn.isConnected) btn.disabled = false; }
+  }
+
+  async function doPdf(id) {
+    let r; try { r = await api.pdf(id); } catch (e) { toast(e.message, 1); return; }
+    if (r && r.print) {
+      await openPfi(id);
+      toast("PDF archiviato: " + r.file);
+      setTimeout(printSheet, 300);
+    } else {
+      toast("PDF generato e salvato sul server");
+      if (view === "form" && cur && cur.id == id) setTimeout(async () => { try { cur = await call("pfi.get", { id }); renderForm(); } catch (e) { } }, 1800);
+    }
+  }
+  function printSheet() {
+    const old = document.title, s = cur.studente || {};
+    document.title = ["PFI", s.cognome, s.nome, cur.classe].filter(Boolean).join("_");
+    $$("#sheet textarea").forEach(grow);
+    try { window.print(); } catch (e) { }
+    setTimeout(() => document.title = old, 500);
+  }
+
+  // ---------- amministrazione: utenti ----------
+  let uf = { ruolo: "", q: "" }, uedit = null;
+  async function showUsers() {
+    try { utenti = await call("users.list"); } catch (e) { return; }
+    $("#main").innerHTML = `
+<div class="vh"><div><h2>Utenti e permessi</h2><p class="mu">Abilita i docenti, assegna loro gli studenti e gestisci gli account. Un docente vede i PFI che ha creato, quelli a cui è associato e quelli dei suoi studenti.</p></div>
+  <span class="sp"></span><button class="pri" id="uNew">+ Nuovo utente</button></div>
+<div id="uedit"></div>
+<div class="tools">
+  <input id="uq" type="search" placeholder="Cerca utente" value="${esc(uf.q)}" aria-label="Cerca utente">
+  <select id="ur" class="sm" aria-label="Ruolo"><option value="">Tutti i ruoli</option>${Object.entries(RUOLI).map(([k, l]) => `<option value="${k}" ${uf.ruolo === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+</div>
+<div class="tw"><table id="ut"></table></div>`;
+    $("#uq").oninput = e => { uf.q = e.target.value.trim().toLowerCase(); drawUsers(); };
+    $("#ur").onchange = e => { uf.ruolo = e.target.value; drawUsers(); };
+    $("#uNew").onclick = () => editUser({ id: 0, ruolo: "docente", nome: "", cognome: "", email: "", classe: "", abilitato: 1, studenti: [] });
+    $("#ut").onclick = e => { const b = e.target.closest("[data-u]"); if (b) editUser(utenti.find(u => u.id == b.dataset.u)); };
+    drawUsers();
+    if (uedit) editUser(utenti.find(u => u.id == uedit) || null);
+  }
+  function drawUsers() {
+    const L = utenti.filter(u => (!uf.ruolo || u.ruolo === uf.ruolo) && (!uf.q || `${u.nome} ${u.cognome} ${u.email} ${u.classe || ""}`.toLowerCase().includes(uf.q)));
+    $("#ut").innerHTML = `<thead><tr><th>Nome</th><th>Ruolo</th><th>Email</th><th>Classe / studenti</th><th>Account</th><th><span class="hide">Azioni</span></th></tr></thead><tbody>` +
+      (L.map(u => `<tr><td><b>${esc(u.cognome)}</b> ${esc(u.nome)}</td><td><span class="tag">${RUOLI[u.ruolo]}</span></td><td>${esc(u.email)}</td>
+        <td>${u.ruolo === "studente" ? esc(u.classe || "—") : u.ruolo === "docente" ? `${u.studenti.length} ${u.studenti.length === 1 ? "studente" : "studenti"}` : "—"}</td>
+        <td>${u.abilitato ? `<span class="st s2">Abilitato</span>` : `<span class="st off">Disabilitato</span>`}</td>
+        <td class="ac"><button data-u="${u.id}">Modifica</button></td></tr>`).join("") || `<tr><td colspan="6" class="mu">Nessun utente trovato.</td></tr>`) + `</tbody>`;
+  }
+  function editUser(u) {
+    const box = $("#uedit");
+    if (!u) { uedit = null; box.innerHTML = ""; return; }
+    uedit = u.id || "new";
+    const stud = utenti.filter(x => x.ruolo === "studente");
+    const classi = [...new Set(stud.map(s => s.classe || "Senza classe"))].sort();
+    box.innerHTML = `<form class="panel" id="uform" novalidate>
+  <h3>${u.id ? "Modifica " + esc(nomeU(u)) : "Nuovo utente"}</h3>
+  <div class="g">
+    <div><label for="eRuolo">Ruolo</label><select id="eRuolo">${Object.entries(RUOLI).map(([k, l]) => `<option value="${k}" ${u.ruolo === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div><label for="eNome">Nome</label><input id="eNome" value="${esc(u.nome)}" required></div>
+    <div><label for="eCognome">Cognome</label><input id="eCognome" value="${esc(u.cognome)}" required></div>
+    <div><label for="eEmail">Email</label><input id="eEmail" type="email" value="${esc(u.email)}" required></div>
+    <div id="wClasse"><label for="eClasse">Classe</label><input id="eClasse" value="${esc(u.classe || "")}" placeholder="es. 1A"></div>
+    ${opt.noPassword ? "" : `<div><label for="ePw">${u.id ? "Nuova password" : "Password"}</label><input id="ePw" type="password" autocomplete="new-password" placeholder="${u.id ? "Lascia vuoto per non cambiarla" : "Almeno 8 caratteri"}"></div>`}
+    <div style="align-self:end"><label class="chk"><input type="checkbox" id="eAbil" ${u.abilitato ? "checked" : ""}> Account abilitato</label></div>
+  </div>
+  <div id="wStud" style="margin-top:14px"><label>Studenti assegnati a questo docente</label>
+    <div class="stulist">${classi.map(cl => `<div class="cl">${esc(cl)}</div>` + stud.filter(s => (s.classe || "Senza classe") === cl).map(s => `<label class="chk"><input type="checkbox" data-stu value="${s.id}" ${u.studenti && u.studenti.includes(s.id) ? "checked" : ""}> ${esc(nomeU(s))}</label>`).join("")).join("") || '<span class="mu">Nessuno studente registrato</span>'}</div>
+  </div>
+  <div class="acts"><button class="pri" type="submit">Salva utente</button><button type="button" id="eCancel">Annulla</button></div>
+</form>`;
+    const sync = () => { const r = $("#eRuolo").value; $("#wClasse").classList.toggle("hide", r !== "studente"); $("#wStud").classList.toggle("hide", r !== "docente"); };
+    $("#eRuolo").onchange = sync; sync();
+    $("#eCancel").onclick = () => editUser(null);
+    $("#uform").onsubmit = async e => {
+      e.preventDefault();
+      const d = { id: u.id, ruolo: val("#eRuolo"), nome: val("#eNome"), cognome: val("#eCognome"), email: val("#eEmail"), classe: val("#eClasse"),
+        abilitato: $("#eAbil").checked ? 1 : 0, password: opt.noPassword ? "" : $("#ePw").value, studenti: $$("[data-stu]:checked").map(x => +x.value) };
+      try {
+        await call("users.save", d);
+        const r = await call("init"); studenti = r.studenti; docenti = r.docenti;
+        uedit = null; toast("Utente salvato"); showUsers();
+      } catch (er) { }
+    };
+    box.scrollIntoView({ block: "nearest" });
+    $("#eNome").focus();
+  }
+
+  // ---------- amministrazione: modello del PFI ----------
+  let nseq = 0;
+  async function showModel() {
+    try { M = await call("model.get"); } catch (e) { return; }
+    drawModel();
+  }
+  function drawModel() {
+    const chiSel = (v, attr, eredita) => `<select ${attr}>${eredita ? `<option value="" ${!v ? "selected" : ""}>Come la sezione</option>` : ""}${Object.entries(CHI).map(([k, l]) => `<option value="${k}" ${v === k ? "selected" : ""}>${l}</option>`).join("")}</select>`;
+    $("#main").innerHTML = `
+<div class="vh"><div><h2>Modello PFI</h2><p class="mu">Sezioni e campi del modulo, uguali per tutti i PFI. Un campo disattivato non compare più nei moduli, ma i dati già inseriti restano nell’archivio. L’asterisco indica i campi necessari per segnare un PFI come «Completo».</p></div>
+  <span class="sp"></span><button id="mAddS">+ Sezione</button><button id="mSave" class="pri">Salva modello</button></div>
+${M.map((s, i) => `
+<section class="msec ${s.attivo ? "" : "off"}">
+  <div class="mhead">
+    <div class="ttl"><label for="ms${i}">Sezione ${i + 1}</label><input id="ms${i}" data-m="s:${i}:titolo" value="${esc(s.titolo)}"></div>
+    <div><label for="mc${i}">Chi la compila</label>${chiSel(s.chi, `id="mc${i}" data-m="s:${i}:chi"`)}</div>
+    <div class="mv"><button data-ma="sup" data-i="${i}" ${i ? "" : "disabled"} title="Sposta su" aria-label="Sposta sezione su">↑</button><button data-ma="sdn" data-i="${i}" ${i < M.length - 1 ? "" : "disabled"} title="Sposta giù" aria-label="Sposta sezione giù">↓</button>${String(s.id).startsWith("n") ? `<button data-ma="sdel" data-i="${i}" class="danger">Rimuovi</button>` : ""}</div>
+  </div>
+  <div class="mopts">
+    <label class="chk"><input type="checkbox" data-m="s:${i}:righe" ${s.righe ? "checked" : ""}> Tabella competenze / periodo / esito</label>
+    <label class="chk"><input type="checkbox" data-m="s:${i}:attivo" ${s.attivo ? "checked" : ""}> Sezione attiva</label>
+  </div>
+  <div class="mf">
+    ${s.campi.length ? `<div class="mrow mhdr"><span class="lab">Etichetta</span><span>Tipo</span><span>Chi lo compila</span><span>Obbl.</span><span>Attivo</span><span></span></div>` : ""}
+    ${s.campi.map((c, j) => `
+    <div class="mrow ${c.attivo ? "" : "off"}">
+      <input class="lab" data-m="c:${i}:${j}:etichetta" value="${esc(c.etichetta)}" aria-label="Etichetta del campo">
+      <select data-m="c:${i}:${j}:tipo" aria-label="Tipo">${Object.entries(TIPI).map(([k, l]) => `<option value="${k}" ${c.tipo === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+      ${chiSel(c.chi, `data-m="c:${i}:${j}:chi" aria-label="Chi lo compila"`, true)}
+      <label class="chk" title="Obbligatorio per «Completo»"><input type="checkbox" data-m="c:${i}:${j}:obbligatorio" ${c.obbligatorio ? "checked" : ""} aria-label="Obbligatorio"></label>
+      <label class="chk keep" title="Campo attivo"><input type="checkbox" data-m="c:${i}:${j}:attivo" ${c.attivo ? "checked" : ""} aria-label="Attivo"></label>
+      <div class="mv keep"><button data-ma="cup" data-i="${i}" data-j="${j}" ${j ? "" : "disabled"} aria-label="Sposta campo su">↑</button><button data-ma="cdn" data-i="${i}" data-j="${j}" ${j < s.campi.length - 1 ? "" : "disabled"} aria-label="Sposta campo giù">↓</button>${String(c.id).startsWith("n") ? `<button data-ma="cdel" data-i="${i}" data-j="${j}" class="danger" aria-label="Rimuovi campo">×</button>` : ""}</div>
+      ${c.tipo === "scelta" ? `<div class="opz"><input data-m="c:${i}:${j}:opzioni" value="${esc(c.opzioni.join("; "))}" placeholder="Opzioni separate da punto e virgola" aria-label="Opzioni dell’elenco"></div>` : ""}
+    </div>`).join("")}
+    <p><button data-ma="cadd" data-i="${i}">+ Campo</button></p>
+  </div>
+</section>`).join("")}`;
+    $("#mAddS").onclick = () => { M.push({ id: "n" + (++nseq), titolo: "Nuova sezione", chi: "docente", righe: 0, attivo: 1, campi: [] }); drawModel(); $(`#ms${M.length - 1}`).select(); };
+    $("#mSave").onclick = saveModel;
+  }
+  function mSet(e) {
+    const p = e.target.dataset.m; if (!p) return;
+    const k = p.split(":"), o = k[0] === "s" ? M[k[1]] : M[k[1]].campi[k[2]], prop = k[0] === "s" ? k[2] : k[3];
+    let v = e.target.type === "checkbox" ? (e.target.checked ? 1 : 0) : e.target.value;
+    if (prop === "opzioni") v = v.split(";").map(x => x.trim()).filter(Boolean);
+    if (prop === "chi" && k[0] === "c") v = v || null;
+    o[prop] = v;
+    if (prop === "tipo" || prop === "attivo") drawModel();
+  }
+  document.addEventListener("change", e => { if (view === "model" && e.target.dataset.m) mSet(e); });
+  document.addEventListener("input", e => { if (view === "model" && e.target.dataset.m && e.target.tagName === "INPUT" && e.target.type !== "checkbox") mSet(e); });
+  document.addEventListener("click", e => {
+    if (view !== "model") return;
+    const b = e.target.closest("[data-ma]"); if (!b) return;
+    const i = +b.dataset.i, j = +b.dataset.j, sw = (a, x, y) => { [a[x], a[y]] = [a[y], a[x]]; };
+    switch (b.dataset.ma) {
+      case "sup": sw(M, i, i - 1); break;
+      case "sdn": sw(M, i, i + 1); break;
+      case "sdel": M.splice(i, 1); break;
+      case "cup": sw(M[i].campi, j, j - 1); break;
+      case "cdn": sw(M[i].campi, j, j + 1); break;
+      case "cdel": M[i].campi.splice(j, 1); break;
+      case "cadd": M[i].campi.push({ id: "n" + (++nseq), etichetta: "Nuovo campo", tipo: "testo", opzioni: [], obbligatorio: 0, chi: null, attivo: 1 }); break;
+    }
+    drawModel();
+  });
+  async function saveModel() {
+    for (const s of M) {
+      if (!String(s.titolo).trim()) { toast("Ogni sezione deve avere un titolo", 1); return; }
+      for (const c of s.campi) {
+        if (!String(c.etichetta).trim()) { toast(`Un campo della sezione «${s.titolo}» non ha etichetta`, 1); return; }
+        if (c.tipo === "scelta" && !c.opzioni.length) { toast(`Il campo «${c.etichetta}» è un elenco a scelta: inserisci almeno un’opzione`, 1); return; }
+      }
+    }
+    try {
+      await call("model.save", { sezioni: M });
+      modello = (await call("init")).modello;
+      M = await call("model.get"); drawModel(); toast("Modello salvato: le modifiche valgono per tutti i PFI");
+    } catch (e) { }
+  }
+
+  // ---------- avvio ----------
+  async function start(apiImpl, options) {
+    api = apiImpl; opt = options || {}; view = "list"; filtri = {}; uedit = null; cur = null;
+    if (!$("#main")) shell();
+    let r; try { r = await call("init"); } catch (e) { $("#main").innerHTML = `<p class="err">Impossibile caricare i dati: ${esc(e.message)}</p>`; return; }
+    me = r.me; scuola = r.scuola || ""; modello = r.modello; studenti = r.studenti; docenti = r.docenti;
+    if (opt.who) opt.who($("#who"), me);
+    if (me.ruolo === "studente") {
+      let L = []; try { L = await call("pfi.list", {}); } catch (e) { }
+      if (L.length === 1) { go("form", L[0].id); return; }
+    }
+    go("list");
+  }
+
+  window.PFI = { start, toast, esc };
+})();
+
+</script>
+<script>
+const SEED = {"utenti":[{"id":1,"ruolo":"admin","nome":"Segreteria","cognome":"Didattica","email":"admin@scuola.it","classe":null,"abilitato":1},{"id":2,"ruolo":"docente","nome":"Laura","cognome":"Bianchi","email":"l.bianchi@scuola.it","classe":null,"abilitato":1},{"id":3,"ruolo":"docente","nome":"Marco","cognome":"Verdi","email":"m.verdi@scuola.it","classe":null,"abilitato":1},{"id":4,"ruolo":"docente","nome":"Paola","cognome":"Russo","email":"p.russo@scuola.it","classe":null,"abilitato":0},{"id":5,"ruolo":"studente","nome":"Luca","cognome":"Rossi","email":"luca.rossi@studenti.scuola.it","classe":"1A","abilitato":1},{"id":6,"ruolo":"studente","nome":"Giulia","cognome":"Ferri","email":"giulia.ferri@studenti.scuola.it","classe":"1A","abilitato":1},{"id":7,"ruolo":"studente","nome":"Sara","cognome":"Neri","email":"sara.neri@studenti.scuola.it","classe":"1B","abilitato":1},{"id":8,"ruolo":"studente","nome":"Matteo","cognome":"Conti","email":"matteo.conti@studenti.scuola.it","classe":"1B","abilitato":1}],"assoc":[[2,5],[2,6],[3,7],[3,8]],"sezioni":[{"id":1,"titolo":"Dati anagrafici e percorso","chi":"docente","righe":0,"ordine":1,"attivo":1},{"id":2,"titolo":"Compilazione dello studente","chi":"studente","righe":0,"ordine":2,"attivo":1},{"id":3,"titolo":"Compilazione dei docenti","chi":"docente","righe":1,"ordine":3,"attivo":1},{"id":4,"titolo":"Firme","chi":"entrambi","righe":0,"ordine":4,"attivo":1}],"campi":[{"id":1,"sezione_id":1,"ordine":1,"etichetta":"Data di nascita","tipo":"data","opzioni":[],"obbligatorio":0,"chi":null,"attivo":1},{"id":2,"sezione_id":1,"ordine":2,"etichetta":"Indirizzo di studio","tipo":"scelta","opzioni":["Amministrazione, Finanza e Marketing","Turismo","Costruzioni, Ambiente e Territorio","Informatica"],"obbligatorio":1,"chi":null,"attivo":1},{"id":3,"sezione_id":1,"ordine":3,"etichetta":"Docente tutor","tipo":"testo","opzioni":[],"obbligatorio":1,"chi":null,"attivo":1},{"id":4,"sezione_id":2,"ordine":1,"etichetta":"Interessi, passioni e aspirazioni","tipo":"area","opzioni":[],"obbligatorio":1,"chi":null,"attivo":1},{"id":5,"sezione_id":2,"ordine":2,"etichetta":"Punti di forza e difficoltà percepite","tipo":"area","opzioni":[],"obbligatorio":1,"chi":null,"attivo":1},{"id":6,"sezione_id":2,"ordine":3,"etichetta":"Esperienze extrascolastiche o lavorative","tipo":"area","opzioni":[],"obbligatorio":0,"chi":null,"attivo":1},{"id":7,"sezione_id":2,"ordine":4,"etichetta":"Obiettivi personali per l’anno","tipo":"area","opzioni":[],"obbligatorio":1,"chi":null,"attivo":1},{"id":8,"sezione_id":3,"ordine":1,"etichetta":"Analisi della situazione di partenza","tipo":"area","opzioni":[],"obbligatorio":1,"chi":null,"attivo":1},{"id":9,"sezione_id":3,"ordine":2,"etichetta":"Strategie e metodologie personalizzate","tipo":"area","opzioni":[],"obbligatorio":1,"chi":null,"attivo":1},{"id":10,"sezione_id":3,"ordine":3,"etichetta":"Modalità di verifica e valutazione","tipo":"area","opzioni":[],"obbligatorio":0,"chi":null,"attivo":1},{"id":11,"sezione_id":4,"ordine":1,"etichetta":"Data","tipo":"data","opzioni":[],"obbligatorio":0,"chi":"docente","attivo":1},{"id":12,"sezione_id":4,"ordine":2,"etichetta":"Firma dello studente","tipo":"testo","opzioni":[],"obbligatorio":0,"chi":"studente","attivo":1},{"id":13,"sezione_id":4,"ordine":3,"etichetta":"Firma del docente tutor","tipo":"testo","opzioni":[],"obbligatorio":0,"chi":"docente","attivo":1},{"id":14,"sezione_id":4,"ordine":4,"etichetta":"Firma del genitore / tutore","tipo":"testo","opzioni":[],"obbligatorio":0,"chi":"docente","attivo":1}],"pfi":[{"id":1,"studente_id":5,"creato_da":2,"classe":"1A","anno":"2026/27","stato":"In compilazione","created_at":"2026-10-05 10:12:00","updated_at":"2026-10-28 16:40:00","docenti":[2],"valori":{"1":"2012-03-14","2":"Amministrazione, Finanza e Marketing","3":"Prof.ssa Laura Bianchi","4":"Mi piacciono il calcio e i videogiochi. Vorrei lavorare in banca o aprire un’attività mia.","5":"Sono bravo in matematica e lavoro bene in gruppo. Faccio fatica a organizzare lo studio a casa.","6":"Gioco a calcio nella squadra del quartiere. D’estate aiuto mio zio nel suo negozio.","7":"Migliorare il metodo di studio e arrivare alla sufficienza in inglese.","8":"Studente motivato con buone competenze logico-matematiche; lacune nella lingua inglese e nell’organizzazione autonoma del lavoro."},"righe":[{"sezione_id":3,"competenza":"Metodo di studio: pianificazione settimanale","periodo":"Ott–Dic","esito":"In corso"},{"sezione_id":3,"competenza":"Inglese: recupero lessico di base","periodo":"Nov–Gen","esito":""}]},{"id":2,"studente_id":6,"creato_da":2,"classe":"1A","anno":"2026/27","stato":"Bozza","created_at":"2026-10-20 09:00:00","updated_at":"2026-10-20 09:05:00","docenti":[2],"valori":{"2":"Turismo","3":"Prof.ssa Laura Bianchi"},"righe":[]},{"id":3,"studente_id":7,"creato_da":3,"classe":"1B","anno":"2026/27","stato":"Completo","created_at":"2026-09-29 11:30:00","updated_at":"2026-10-30 12:15:00","docenti":[3],"valori":{"1":"2012-07-02","2":"Informatica","3":"Prof. Marco Verdi","4":"Programmazione e disegno digitale. Mi piacerebbe progettare videogiochi.","5":"Sono creativa e curiosa; a volte mi blocco durante le interrogazioni orali.","6":"Corso pomeridiano di coding in biblioteca.","7":"Partecipare alle Olimpiadi di Informatica e migliorare nell’esposizione orale.","8":"Ottime capacità logiche e interesse spiccato per l’informatica; ansia da prestazione nelle verifiche orali.","9":"Verifiche orali programmate, uso di mappe concettuali, coinvolgimento in attività di tutoraggio tra pari.","10":"Valutazione formativa in itinere e prove strutturate a fine quadrimestre.","11":"2026-10-30","12":"Sara Neri","13":"Marco Verdi","14":"Anna Neri"},"righe":[{"sezione_id":3,"competenza":"Esposizione orale con supporto di mappe","periodo":"1° quadrimestre","esito":"Raggiunto"},{"sezione_id":3,"competenza":"Preparazione Olimpiadi di Informatica","periodo":"Gen–Mar","esito":"Avviato"}]},{"id":4,"studente_id":8,"creato_da":3,"classe":"1B","anno":"2026/27","stato":"Bozza","created_at":"2026-10-31 15:00:00","updated_at":"2026-10-31 15:00:00","docenti":[3],"valori":{"2":"Costruzioni, Ambiente e Territorio"},"righe":[]}]};
+/* DemoApi — simula il backend PHP nel browser (localStorage). Stesse azioni e stessi permessi di api.php. */
+const DemoApi = (() => {
+  "use strict";
+  const K = "pfi_demo_v2", SK = "pfi_demo_utente";
+  const mem = {};
+  const store = {
+    get(k) { try { const v = localStorage.getItem(k); return v ?? mem[k] ?? null; } catch (e) { return mem[k] ?? null; } },
+    set(k, v) { mem[k] = v; try { localStorage.setItem(k, v); } catch (e) { } }
+  };
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const now = () => { const d = new Date(), p = n => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`; };
+  const STATI = ["Bozza", "In compilazione", "Completo"], CHI = ["studente", "docente", "entrambi"], TIPI = ["testo", "area", "data", "numero", "scelta"];
+  let D = null;
+
+  function seed() { const s = clone(SEED); s.v = 2; s.seq = 100; s.pdf = []; return s; }
+  function load() {
+    if (D) return;
+    try { D = JSON.parse(store.get(K)); } catch (e) { D = null; }
+    if (!D || D.v !== 2) { D = seed(); save(); }
+  }
+  const save = () => store.set(K, JSON.stringify(D));
+  const nid = () => ++D.seq;
+  const fail = (m) => { throw new Error(m); };
+  const me = () => D.utenti.find(u => u.id === +store.get(SK) && u.abilitato) || D.utenti[0];
+  const pub = u => ({ id: u.id, ruolo: u.ruolo, nome: u.nome, cognome: u.cognome, email: u.email, classe: u.classe, abilitato: u.abilitato });
+  const byOrd = (a, b) => a.ordine - b.ordine || a.id - b.id;
+
+  // --- permessi (identici a src/permessi.php) ---
+  const visibile = (u, p) => u.ruolo === "admin" || (u.ruolo === "studente" ? p.studente_id === u.id
+    : (p.creato_da === u.id || p.docenti.includes(u.id) || D.assoc.some(([d, s]) => d === u.id && s === p.studente_id)));
+  const puoCompilare = (u, chi) => u.ruolo === "admin" || (chi || "docente") === "entrambi" || (chi || "docente") === u.ruolo;
+  const puoEliminare = (u, p) => u.ruolo === "admin" || (u.ruolo === "docente" && p.creato_da === u.id);
+  const getPfi = (u, id) => { const p = D.pfi.find(x => x.id === +id); return p && visibile(u, p) ? p : null; };
+
+  function modello(tutti) {
+    return D.sezioni.filter(s => tutti || s.attivo).sort(byOrd).map(s => ({ ...clone(s),
+      campi: D.campi.filter(c => c.sezione_id === s.id && (tutti || c.attivo)).sort(byOrd).map(clone) }));
+  }
+  const utentiRuolo = r => D.utenti.filter(u => u.ruolo === r).sort((a, b) => (a.cognome + a.nome).localeCompare(b.cognome + b.nome, "it"))
+    .map(u => ({ id: u.id, nome: u.nome, cognome: u.cognome, classe: u.classe, abilitato: u.abilitato }));
+
+  const A = {
+    init(u) {
+      const st = u.ruolo !== "studente";
+      return { me: pub(u), scuola: "Istituto di Istruzione Superiore «G. Galilei» · demo", modello: modello(false),
+        studenti: st ? utentiRuolo("studente") : [], docenti: st ? utentiRuolo("docente") : [] };
+    },
+
+    "pfi.list"(u, f) {
+      const q = (f.q || "").toLowerCase(), cl = (f.classe || "").toUpperCase(), adm = u.ruolo === "admin";
+      return D.pfi.filter(p => visibile(u, p)).map(p => ({ p, s: D.utenti.find(x => x.id === p.studente_id) })).filter(({ p, s }) => {
+        if (q && !`${s.cognome} ${s.nome} ${s.nome} ${s.cognome}`.toLowerCase().includes(q)) return false;
+        if (cl && !p.classe.toUpperCase().includes(cl)) return false;
+        if (adm) {
+          if (f.testo) { const t = f.testo.toLowerCase(); if (![...Object.values(p.valori), ...p.righe.map(r => `${r.competenza} ${r.periodo} ${r.esito}`)].some(v => String(v).toLowerCase().includes(t))) return false; }
+          if (f.anno && !p.anno.includes(f.anno)) return false;
+          if (f.stato && p.stato !== f.stato) return false;
+          if (f.docente_id && !(p.creato_da === +f.docente_id || p.docenti.includes(+f.docente_id))) return false;
+          if (f.dal && p.updated_at.slice(0, 10) < f.dal) return false;
+          if (f.al && p.updated_at.slice(0, 10) > f.al) return false;
+        }
+        return true;
+      }).sort((a, b) => (a.s.cognome + a.s.nome).localeCompare(b.s.cognome + b.s.nome, "it"))
+        .map(({ p, s }) => ({ id: p.id, classe: p.classe, anno: p.anno, stato: p.stato, updated_at: p.updated_at, creato_da: p.creato_da, nome: s.nome, cognome: s.cognome, puo_eliminare: puoEliminare(u, p) }));
+    },
+
+    "pfi.get"(u, { id }) {
+      const p = getPfi(u, id) || fail("PFI non trovato o non accessibile");
+      const s = D.utenti.find(x => x.id === p.studente_id);
+      return { ...clone(p), studente: { id: s.id, nome: s.nome, cognome: s.cognome, classe: s.classe },
+        pdf: D.pdf.filter(x => x.pfi_id === p.id).sort((a, b) => b.id - a.id), puo_eliminare: puoEliminare(u, p) };
+    },
+
+    "pfi.save"(u, d) {
+      const staff = u.ruolo !== "studente";
+      let p = null;
+      if (d.id) p = getPfi(u, d.id) || fail("PFI non trovato o non accessibile");
+      else if (!staff) fail("Solo docenti e amministratori possono creare un PFI");
+      const work = p ? clone(p) : { id: 0, creato_da: u.id, created_at: now(), docenti: [], valori: {}, righe: [], stato: "Bozza" };
+
+      if (staff) {
+        const stu = D.utenti.find(x => x.id === +d.studente_id && x.ruolo === "studente") || fail("Seleziona uno studente valido");
+        work.studente_id = stu.id;
+        work.classe = String(d.classe || "").trim().slice(0, 20) || stu.classe || "";
+        work.anno = String(d.anno || "").trim().slice(0, 9);
+        if (STATI.includes(d.stato)) work.stato = d.stato;
+        let doc = (d.docenti || []).map(Number);
+        if (u.ruolo === "docente" && (!p || p.docenti.includes(u.id))) doc.push(u.id);
+        work.docenti = [...new Set(doc)].filter(id => D.utenti.some(x => x.id === id && x.ruolo === "docente"));
+      }
+      for (const s of modello(false)) {
+        for (const c of s.campi) {
+          if (!puoCompilare(u, c.chi || s.chi) || !(String(c.id) in (d.valori || {}))) continue;
+          const v = String(d.valori[c.id] ?? "").trim();
+          if (v) work.valori[c.id] = v; else delete work.valori[c.id];
+        }
+        if (s.righe && puoCompilare(u, s.chi)) {
+          work.righe = work.righe.filter(r => r.sezione_id !== s.id).concat((d.righe || []).filter(r => +r.sezione_id === s.id)
+            .map(r => ({ sezione_id: s.id, competenza: String(r.competenza || "").trim(), periodo: String(r.periodo || "").trim().slice(0, 100), esito: String(r.esito || "").trim().slice(0, 200) }))
+            .filter(r => r.competenza || r.periodo || r.esito));
+        }
+      }
+      if (work.stato === "Completo") {
+        const manca = modello(false).flatMap(s => s.campi.filter(c => c.obbligatorio && !work.valori[c.id]).map(c => c.etichetta));
+        if (manca.length) fail("Per segnare il PFI come «Completo» mancano: " + manca.join(", "));
+      }
+      work.updated_at = now();
+      if (p) Object.assign(p, work); else { work.id = nid(); D.pfi.push(work); }
+      save();
+      return { id: work.id };
+    },
+
+    "pfi.delete"(u, { id }) {
+      const p = getPfi(u, id) || fail("PFI non trovato");
+      if (!puoEliminare(u, p)) fail("Non hai i permessi per eliminare questo PFI");
+      D.pfi = D.pfi.filter(x => x !== p); D.pdf = D.pdf.filter(x => x.pfi_id !== p.id); save();
+      return { ok: true };
+    },
+
+    // Simula pdf.php: registra il file "salvato sul server"
+    "pfi.pdf"(u, { id }) {
+      const p = getPfi(u, id) || fail("PFI non trovato");
+      const s = D.utenti.find(x => x.id === p.studente_id);
+      const t = now(), slug = `${s.cognome}_${s.nome}`.normalize("NFD").replace(/[^A-Za-z0-9]+/g, "_");
+      const file = `PFI_${slug}_${p.classe || "NC"}_${t.replace(/\D/g, "").slice(0, 8)}_${t.replace(/\D/g, "").slice(8)}.pdf`;
+      D.pdf.push({ id: nid(), pfi_id: p.id, file, generato_da: u.id, created_at: t }); save();
+      return { file };
+    },
+
+    "users.list"(u) {
+      if (u.ruolo !== "admin") fail("Operazione riservata all’amministratore");
+      const ord = { admin: 0, docente: 1, studente: 2 };
+      return D.utenti.slice().sort((a, b) => ord[a.ruolo] - ord[b.ruolo] || (a.cognome + a.nome).localeCompare(b.cognome + b.nome, "it"))
+        .map(x => ({ ...pub(x), studenti: D.assoc.filter(([d]) => d === x.id).map(([, s]) => s) }));
+    },
+
+    "users.save"(u, d) {
+      if (u.ruolo !== "admin") fail("Operazione riservata all’amministratore");
+      const id = +d.id || 0, ruolo = ["admin", "docente", "studente"].includes(d.ruolo) ? d.ruolo : fail("Ruolo non valido");
+      const nome = String(d.nome || "").trim(), cognome = String(d.cognome || "").trim(), email = String(d.email || "").trim().toLowerCase();
+      if (!nome || !cognome) fail("Nome e cognome sono obbligatori");
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) fail("Email non valida");
+      if (D.utenti.some(x => x.email === email && x.id !== id)) fail("Email già usata da un altro utente");
+      if (id === u.id && (ruolo !== "admin" || !d.abilitato)) fail("Non puoi togliere a te stesso il ruolo di amministratore o disabilitarti");
+      const rec = { ruolo, nome, cognome, email, classe: ruolo === "studente" ? (String(d.classe || "").trim().toUpperCase() || null) : null, abilitato: d.abilitato ? 1 : 0 };
+      let x;
+      if (id) { x = D.utenti.find(y => y.id === id) || fail("Utente non trovato"); Object.assign(x, rec); }
+      else { x = { id: nid(), ...rec }; D.utenti.push(x); }
+      D.assoc = D.assoc.filter(([dd]) => dd !== x.id);
+      if (ruolo === "docente") [...new Set((d.studenti || []).map(Number))].filter(s => D.utenti.some(y => y.id === s && y.ruolo === "studente")).forEach(s => D.assoc.push([x.id, s]));
+      save();
+      return { id: x.id };
+    },
+
+    "model.get"(u) { if (u.ruolo !== "admin") fail("Operazione riservata all’amministratore"); return modello(true); },
+
+    "model.save"(u, { sezioni }) {
+      if (u.ruolo !== "admin") fail("Operazione riservata all’amministratore");
+      const S = clone(D.sezioni), C = clone(D.campi);
+      (sezioni || []).forEach((s, i) => {
+        const titolo = String(s.titolo || "").trim() || fail("Ogni sezione deve avere un titolo");
+        const rec = { titolo, chi: CHI.includes(s.chi) ? s.chi : "docente", righe: s.righe ? 1 : 0, ordine: i + 1, attivo: s.attivo ? 1 : 0 };
+        let sez = S.find(x => x.id === s.id);
+        if (sez) Object.assign(sez, rec); else { sez = { id: nid(), ...rec }; S.push(sez); }
+        (s.campi || []).forEach((c, j) => {
+          const et = String(c.etichetta || "").trim() || fail(`Un campo della sezione «${titolo}» non ha etichetta`);
+          const tipo = TIPI.includes(c.tipo) ? c.tipo : "testo";
+          const opz = (c.opzioni || []).map(o => String(o).trim()).filter(Boolean);
+          if (tipo === "scelta" && !opz.length) fail(`Il campo «${et}» è un elenco a scelta: inserisci almeno un’opzione`);
+          const cr = { sezione_id: sez.id, etichetta: et, tipo, opzioni: opz, obbligatorio: c.obbligatorio ? 1 : 0, chi: CHI.includes(c.chi) ? c.chi : null, ordine: j + 1, attivo: c.attivo ? 1 : 0 };
+          const ex = C.find(x => x.id === c.id);
+          if (ex) Object.assign(ex, cr); else C.push({ id: nid(), ...cr });
+        });
+      });
+      D.sezioni = S; D.campi = C; save();
+      return { ok: true };
+    }
+  };
+
+  return {
+    call(azione, dati) {
+      return new Promise((res, rej) => setTimeout(() => {
+        try {
+          load();
+          if (!A[azione]) fail("Azione sconosciuta");
+          res(clone(A[azione](me(), clone(dati || {})) ?? {}));
+        } catch (e) { rej(e); }
+      }, 80));
+    },
+    async pdf(id) { const r = await this.call("pfi.pdf", { id }); return { print: true, file: r.file }; },
+    pdfHref: null,
+    utenti() { load(); return D.utenti.filter(u => u.abilitato).map(pub); },
+    attuale() { load(); return me(); },
+    accediCome(id) { store.set(SK, String(id)); },
+    ripristina() { D = seed(); save(); store.set(SK, ""); }
+  };
+})();
+
+</script>
+<script>
+(function () {
+  const RUOLI = { admin: "Amministratore", docente: "Docente", studente: "Studente" };
+  function who(el, me) {
+    const U = DemoApi.utenti();
+    el.innerHTML = `<div class="whoas"><label for="dUser">Accedi come</label><select id="dUser">` +
+      Object.entries(RUOLI).map(([r, l]) => `<optgroup label="${l}">` + U.filter(u => u.ruolo === r).map(u =>
+        `<option value="${u.id}" ${u.id === me.id ? "selected" : ""}>${PFI.esc(u.cognome + " " + u.nome)}${u.classe ? " · " + PFI.esc(u.classe) : ""}</option>`).join("") + `</optgroup>`).join("") +
+      `</select></div>`;
+    document.getElementById("dUser").onchange = e => { DemoApi.accediCome(e.target.value); PFI.start(DemoApi, OPT); };
+  }
+  const OPT = { who, noPassword: true };
+  let armed = false;
+  document.getElementById("dReset").onclick = e => {
+    const b = e.currentTarget;
+    if (!armed) { armed = true; b.textContent = "Confermi? Le modifiche andranno perse"; setTimeout(() => { armed = false; b.textContent = "Ripristina dati di esempio"; }, 3500); return; }
+    armed = false; b.textContent = "Ripristina dati di esempio";
+    DemoApi.ripristina(); PFI.start(DemoApi, OPT); PFI.toast("Dati di esempio ripristinati");
+  };
+  PFI.start(DemoApi, OPT);
+})();
+</script>
+
+</body></html>
